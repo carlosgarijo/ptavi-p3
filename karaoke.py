@@ -6,15 +6,24 @@ from xml.sax.handler import ContentHandler
 import smallsmilhandler
 import sys
 
+
+def listado_ordenado(tags):
+    listado = ""
+    for diccs in tags:
+        atrib_line = ""
+        for key in diccs.keys():
+            if key != "name" and diccs[key] != "":
+                atrib_line = atrib_line + key + "=" + diccs[key] + "\t"
+        listado = listado + diccs["name"] + "\t" + atrib_line + "\n"
+    return listado
+
 if __name__ == "__main__":
-    """
-    Programa principal
-    """
+
     fich = sys.argv[1]
     try:
         fichero = open(fich)
     except IndexError:
-        print("Usage: python3 karaoke.py file.smil.")
+        sys.exit("Usage: python3 karaoke.py file.smil.")
 
     parser = make_parser()
     ssHandler = smallsmilhandler.SmallSMILHandler()
@@ -22,4 +31,5 @@ if __name__ == "__main__":
     parser.parse(fichero)
 
     tags = ssHandler.get_tags()
-    print(tags)
+    result = listado_ordenado(tags)
+    print(result)
