@@ -55,8 +55,6 @@ class KaraokeLocal(smallsmilhandler.SmallSMILHandler):
                         filename = list_url[-1]
                         f = open(filename, "wb")
                         f.write(arch_web.read())
-                    else:
-                        filename = contenido
 
 if __name__ == "__main__":
 
