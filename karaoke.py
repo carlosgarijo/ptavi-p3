@@ -39,21 +39,15 @@ class KaraokeLocal(smallsmilhandler.SmallSMILHandler):
             json.dump(self.tags, outfile_json, sort_keys=True,
                       indent=3, separators=(' ', ': '))
 
-    def to_local(self):
-        list_url = []
+    def do_local(self):
         for subline in self.tags:
-            subdicc = subline[1]
-            atribs = subdicc.items()
-            for atrib, contenido in atribs:
-                if atrib == "src":
-                    url = contenido
-                    list_url = url.split("/")
-                    remoto = list_url[0]
-                    if remoto == "http:":
-                        arch_web = urllib.request.urlopen(url)
-                        filename = list_url[-1]
-                        f = open(filename, "wb")
-                        f.write(arch_web.read())
+            atribs = subline[1]
+            for key in atribs:
+                if atribs[key].startswith('http://'):
+                    url = atribs[key]
+                    filename = url.split('/')[-1]
+                    urllib.request.urlretrieve(url, filename)
+                    atribs[key] = filename
 
 if __name__ == "__main__":
 
@@ -66,6 +60,6 @@ if __name__ == "__main__":
     Karaoke = KaraokeLocal(fichero)
     print(Karaoke)
     Karaoke.to_json(fichero.name)
-    Karaoke.to_local()
+    Karaoke.do_local()
     Karaoke.to_json()
     print(Karaoke)
