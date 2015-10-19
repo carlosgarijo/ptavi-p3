@@ -6,49 +6,60 @@ from xml.sax.handler import ContentHandler
 import smallsmilhandler
 import sys
 import json
+import string
 import urllib
 
-def init_parse(fichero):
-    parser = make_parser()
-    ssHandler = smallsmilhandler.SmallSMILHandler()
-    parser.setContentHandler(ssHandler)
-    parser.parse(fichero)
-    tags = ssHandler.get_tags()
-    return tags
 
-def listado_ordenado(tags):
-    listado = ""
-    for etiqueta in tags:
-        listado = listado + etiqueta[0]
-        atribs = etiqueta[1].items()
-        for atrib, contenido in atribs:
-            if contenido != "":
-                listado = listado + "\t" + atrib + "=" + '"' + contenido + '"'
-        listado = listado + "\n"
-    return listado
+class KaraokeLocal(smallsmilhandler.SmallSMILHandler):
+    def __init__(self, fichero):
+        parser = make_parser()
+        ssHandler = smallsmilhandler.SmallSMILHandler()
+        parser.setContentHandler(ssHandler)
+        parser.parse(fichero)
+        self.tags = ssHandler.get_tags()
 
-def to_json(tags):
-    with open('karaoke.json', 'w') as outfile_json:
-        json.dump(tags, outfile_json, sort_keys=True, indent=3, separators=(' ', ': '))
+    def __str__(self):
+        listado = ""
+        for subline in self.tags:
+            listado = listado + subline[0]
+            subdicc = subline[1]
+            atribs = subdicc.items()
+            for atrib, contenido in atribs:
+                if contenido != "":
+                    listado = listado + "\t" + atrib + "=" + '"' + contenido + '"'
+            listado = listado + "\n"
+        print("Imprimiendo listado de etiquetas..." + "\n")
+        return listado
 
-def url_local(tags):
-    list_url = []
-    for etiqueta in tags:
-        atribs = etiqueta[1].items()
-        for atrib, contenido in atribs:
-            if atrib == "src":
-                url = contenido
-                list_url = url.split("/")
-                remoto = list_url[0]
-                if remoto == "http:":
-                    arch_web = urllib.request.urlopen(url)
-                    filename = list_url[-1]
-                    print("Descargando... " + filename)
-                    f = open(filename, "wb")
-                    f.write(arch_web.read())
-                else:
-                    filename = contenido
-                    print("Este contenido ya está en local... " + filename)
+    def to_json(self, fich_name = ""):
+        if not fich_name:
+            fich_name = "local.json"
+        else:
+            fich_name = fich_name.replace(".smil", ".json")
+        print("Convirtiendo a JSON... " + fich_name + "\n")
+        with open(fich_name, 'w') as outfile_json:
+            json.dump(self.tags, outfile_json, sort_keys=True,
+            indent=3, separators=(' ', ': '))
+
+    def to_local(self):
+        list_url = []
+        for subline in self.tags:
+            subdicc = subline[1]
+            atribs = subdicc.items()
+            for atrib, contenido in atribs:
+                if atrib == "src":
+                    url = contenido
+                    list_url = url.split("/")
+                    remoto = list_url[0]
+                    if remoto == "http:":
+                        arch_web = urllib.request.urlopen(url)
+                        filename = list_url[-1]
+                        print("Descargando... " + filename)
+                        f = open(filename, "wb")
+                        f.write(arch_web.read())
+                    else:
+                        filename = contenido
+                        print("Este contenido ya está en local... " + filename + "\n")
 
 if __name__ == "__main__":
 
@@ -57,10 +68,10 @@ if __name__ == "__main__":
         fichero = open(fich)
     except IndexError:
         sys.exit("Usage: python3 karaoke.py file.smil.")
-
-    tags = init_parse(fichero)
-    result = listado_ordenado(tags)
-    print(result)
-    to_json(tags)
-    url_local(tags)
-
+        
+    Karaoke = KaraokeLocal(fichero)
+    print(Karaoke)
+    Karaoke.to_json(fichero.name)
+    Karaoke.to_local()
+    Karaoke.to_json()
+    print(Karaoke)
