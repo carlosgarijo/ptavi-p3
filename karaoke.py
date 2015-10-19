@@ -64,7 +64,6 @@ def url_local(tags):
                     print("Contenido ya en local... " + filename + "\n")
 
 if __name__ == "__main__":
-
     fich = sys.argv[1]
     try:
         fichero = open(fich)
