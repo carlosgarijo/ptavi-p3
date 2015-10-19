@@ -29,7 +29,6 @@ class KaraokeLocal(smallsmilhandler.SmallSMILHandler):
                     listado = (listado + "\t" + atrib +
                                "=" + '"' + contenido + '"')
             listado = listado + "\n"
-        print("Imprimiendo listado de etiquetas..." + "\n")
         return listado
 
     def to_json(self, fich_name=""):
@@ -37,7 +36,6 @@ class KaraokeLocal(smallsmilhandler.SmallSMILHandler):
             fich_name = "local.json"
         else:
             fich_name = fich_name.replace(".smil", ".json")
-        print("Convirtiendo a JSON... " + fich_name + "\n")
         with open(fich_name, 'w') as outfile_json:
             json.dump(self.tags, outfile_json, sort_keys=True,
                       indent=3, separators=(' ', ': '))
@@ -55,12 +53,10 @@ class KaraokeLocal(smallsmilhandler.SmallSMILHandler):
                     if remoto == "http:":
                         arch_web = urllib.request.urlopen(url)
                         filename = list_url[-1]
-                        print("Descargando... " + filename)
                         f = open(filename, "wb")
                         f.write(arch_web.read())
                     else:
                         filename = contenido
-                        print("Contenido ya en local " + filename + "\n")
 
 if __name__ == "__main__":
 
