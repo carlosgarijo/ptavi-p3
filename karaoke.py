@@ -6,7 +6,6 @@ from xml.sax.handler import ContentHandler
 import smallsmilhandler
 import sys
 import json
-import string
 import urllib
 
 
