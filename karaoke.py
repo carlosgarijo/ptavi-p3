@@ -8,40 +8,47 @@ import sys
 import json
 import urllib
 
+def init_parse(fichero):
+    parser = make_parser()
+    ssHandler = smallsmilhandler.SmallSMILHandler()
+    parser.setContentHandler(ssHandler)
+    parser.parse(fichero)
+    tags = ssHandler.get_tags()
+    return tags
 
 def listado_ordenado(tags):
     listado = ""
-    for diccs in tags:
-        atrib_line = ""
-        for key in diccs.keys():
-            if key != "name" and diccs[key] != "":
-                atrib_line = atrib_line + key + "=" + diccs[key] + "\t"
-        listado = listado + diccs["name"] + "\t" + atrib_line + "\n"
+    for etiqueta in tags:
+        listado = listado + etiqueta[0]
+        atribs = etiqueta[1].items()
+        for atrib, contenido in atribs:
+            if contenido != "":
+                listado = listado + "\t" + atrib + "=" + '"' + contenido + '"'
+        listado = listado + "\n"
     return listado
 
-def to_json(fichero):
-    json_listado = json.dumps(fichero)
-    #print(json_listado)
-    with open('/home/garijos/Escritorio/PTAVI/ptavi-p3/karaoke.json', 'w') as outfile:
-        json.dump(json_listado, outfile)
+def to_json(tags):
+    with open('karaoke.json', 'w') as outfile_json:
+        json.dump(tags, outfile_json, sort_keys=True, indent=3, separators=(' ', ': '))
 
 def url_local(tags):
     list_url = []
-    for diccs in tags:
-        for key in diccs.keys():
-            if key == "src":
-                url = diccs[key]
+    for etiqueta in tags:
+        atribs = etiqueta[1].items()
+        for atrib, contenido in atribs:
+            if atrib == "src":
+                url = contenido
                 list_url = url.split("/")
                 remoto = list_url[0]
                 if remoto == "http:":
                     arch_web = urllib.request.urlopen(url)
                     filename = list_url[-1]
-                    print(filename)
+                    print("Descargando... " + filename)
                     f = open(filename, "wb")
                     f.write(arch_web.read())
                 else:
-                    filename = diccs[key]
-                    print(filename)
+                    filename = contenido
+                    print("Este contenido ya está en local... " + filename)
 
 if __name__ == "__main__":
 
@@ -51,14 +58,9 @@ if __name__ == "__main__":
     except IndexError:
         sys.exit("Usage: python3 karaoke.py file.smil.")
 
-    parser = make_parser()
-    ssHandler = smallsmilhandler.SmallSMILHandler()
-    parser.setContentHandler(ssHandler)
-    parser.parse(fichero)
-
-    tags = ssHandler.get_tags()
+    tags = init_parse(fichero)
     result = listado_ordenado(tags)
     print(result)
-
-    #to_json(fichero)
+    to_json(tags)
     url_local(tags)
+
